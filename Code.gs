@@ -18,10 +18,15 @@ function scraper(dealer,type) {
   //BMW=0, Mini=1;
   //Detractor=2; Passive=1;Promoter=0
   //dealer=0;type=1;
-  var ss=SpreadsheetApp.getActiveSpreadsheet();
-  var ui=SpreadsheetApp.getUi();
-  var sheetName=ss.getSheetByName("YTD 2018").getRange("F1").getDisplayValue();
-  var sheet=ss.getSheetByName(sheetName);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var ui = SpreadsheetApp.getUi();
+  var sheetName = ss.getSheetByName("YTD 2018").getRange("F1").getDisplayValue();
+  var sheet = ss.getSheetByName(sheetName);
+  if (sheet == null) { 
+    ui.alert('Sheet Not Found', 'The sheet named "' + sheetName 
+             + '" could not be found. Please check the sheet names for any spelling errors and try again.', ui.ButtonSet.OK);
+    return;
+  }
   var source=ss.getActiveSheet();var column;var row;
   if (dealer == 0) { var names=ss.getSheetByName("YTD 2018").getRange("A5:A19").getValues(); row=5; }
   else if (dealer == 1) { var names=ss.getSheetByName("YTD 2018").getRange("A28:A33").getValues(); row=28; }
@@ -33,7 +38,7 @@ function scraper(dealer,type) {
   }
   Logger.log(column);
   for(i=0;i<names.length;i++){
-    names[i]=[names[i][0],0];
+    names[i]=[names[i],0];
   }
   Logger.log(names);
   for(var i=1;i<range.length;i++){
