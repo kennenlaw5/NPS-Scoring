@@ -26,23 +26,24 @@ function scraper(dealer,type) {
   //dealer=0;type=1;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ui = SpreadsheetApp.getUi();
-  var sheetName = ss.getSheetByName("YTD 2018").getRange("F1").getDisplayValue();
+  var sheetName = ss.getSheetByName('YTD 2018').getRange('F1').getDisplayValue();
   var sheet = ss.getSheetByName(sheetName);
   if (sheet == null) { 
     ui.alert('Sheet Not Found', 'The sheet named "' + sheetName 
              + '" could not be found. Please check the sheet names for any spelling errors and try again.', ui.ButtonSet.OK);
     return;
   }
-  var source=ss.getActiveSheet();
+  var source = ss.getActiveSheet();
   var column, row;
-  if (dealer == 0) { var names = ss.getSheetByName("YTD 2018").getRange("A5:A19").getValues(); row = 5; }
-  else if (dealer == 1) { var names = ss.getSheetByName("YTD 2018").getRange("A28:A33").getValues(); row = 28; }
+  var names = getNames(dealer);
+  row = names[1];
+  names = names[0];
   var found = false;
   var num = 0;
   var range = source.getRange(1, 1, source.getLastRow(), source.getLastColumn()).getValues();
   
   for (var i = 0; i < range[0].length; i++) {
-    if(range[0][i] == "Advisor Name") { column=parseInt(i); }
+    if(range[0][i] == "Advisor Name") { column = parseInt(i); }
   }
   
   for (i = 0; i < names.length; i++) {
@@ -51,7 +52,7 @@ function scraper(dealer,type) {
   
   for (var i = 1; i < range.length; i++) {
     if(range[i][0] != ''){
-      found=false;
+      found = false;
       for (var j = 0; j < names.length && found == false; j++) {
         if (range[i][column] == names[j][0]) {
           found = true;
