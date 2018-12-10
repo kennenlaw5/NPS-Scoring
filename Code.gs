@@ -70,7 +70,7 @@ function scraper(dealer,type) {
     final[i] = [names[i][1]];
   }
   
-  sheet.getRange(row, parseInt(type)+3 ,names.length).setValues(final);
+  sheet.getRange(row, parseInt(type) + 3 ,names.length).setValues(final);
   ss.setActiveSheet(sheet);
   ss.deleteSheet(source);
 }

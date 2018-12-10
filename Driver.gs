@@ -7,11 +7,6 @@ function driver (input) {
       var dealers = ['BMW', 'MINI'];
       return dealers;
       break;
-    case 'bmw_start':
-      var BMW_Start_Row = 5;
-      break;
-    case 'mini_start':
-      var Mini_Start_Row = 30;
   }
 }
 
