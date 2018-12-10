@@ -16,7 +16,9 @@ function getNames (dealer /*REQUIRED*/, sheet) {
   else { sheet = ss.getSheetByName(sheet); }
   var values = sheet.getRange(1, 1, sheet.getLastRow()).getDisplayValues();
   var compile = false;
+  var found = false;
   var names = [];
+  Logger.log(names.length)
   var first, last;
   dealer = driver('dealers')[dealer];
   
@@ -24,10 +26,10 @@ function getNames (dealer /*REQUIRED*/, sheet) {
     if (compile && values[i][0].toUpperCase().indexOf('ADVISER') == -1) {
       names.push(values[i][0]);
       if (names.length == 1) { first = i + 1; }
-      if (values[i][0].toUpperCase() == 'OTHER') { compile = false; last = i + 1; break; }
+      if (values[i][0].toUpperCase() == 'OTHER') { compile = false; found = false; last = i + 1; break; }
     } else if (!compile && values[i][0].toUpperCase() == dealer) {
-      compile = true;
-    }
+      found = true;
+    } else if (found && !compile && values[i][0].toUpperCase().indexOf('ADVISER') != -1) { compile = true; }
   }
   return [names, first, last];
 }

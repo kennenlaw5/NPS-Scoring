@@ -143,16 +143,16 @@ function removeAdviser() {
   sheets = ss.getSheets();
   
   for (var i = 0; i < 13; i++) {
+    valid = false;
     sheets[i].activate();
     names = getNames(dealer, sheets[i].getSheetName());
     row = names[1];
     names = names[0];
     Logger.log([sheets[i].getSheetName(), row]);
     for (var j = 0; j < names.length; j++) {
-      if (names[j].toUpperCase() == adviser.toUpperCase()) { row += j; break; }
-    }   
-    Logger.log(row);
-//    sheets[i].deleteRow(row);
+      if (names[j].toUpperCase() == adviser.toUpperCase()) { row += j; valid = true; break; }
+    }
+    if (valid) { sheets[i].deleteRow(row); }
   }
   sheets[0].activate();
   ss.toast(adviser + ' was deleted from the sheet successfully!', 'Complete!');
