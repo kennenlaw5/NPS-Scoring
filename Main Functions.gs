@@ -1,7 +1,10 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Utilities').addSubMenu(ui.createMenu('BMW').addItem('Detractor','BD').addItem('Passive','BPa').addItem('Promoter','BPr'))
-  .addSubMenu(ui.createMenu('Mini').addItem('Detractor','MD').addItem('Passive','MPa').addItem('Promoter','MPr')).addToUi();
+  var menu = ui.createMenu('Utilities').addSubMenu(ui.createMenu('BMW').addItem('Detractor','BD').addItem('Passive','BPa').addItem('Promoter','BPr'))
+  .addSubMenu(ui.createMenu('Mini').addItem('Detractor','MD').addItem('Passive','MPa').addItem('Promoter','MPr')).addItem('Add Adviser', 'addAdviser').addItem('Remove Adviser', 'removeAdviser');
+  var month = new Date().getMonth();
+  if (month == 0) { menu.addItem('New Year', 'newYear'); }
+  menu.addToUi();
   //.addItem('Reset Statistics','reset').addItem('Refresh CA Ranking','rank').addToUi();
   var message = 'The spreadsheet has loaded successfully! Have a great day!';
   var title = 'Complete!';
@@ -26,7 +29,7 @@ function scraper(dealer,type) {
   //dealer=0;type=1;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ui = SpreadsheetApp.getUi();
-  var sheetName = ss.getSheetByName('YTD 2018').getRange('F1').getDisplayValue();
+  var sheetName = ss.getSheetByName(driver('main_sheet')).getRange('F1').getDisplayValue();
   var sheet = ss.getSheetByName(sheetName);
   if (sheet == null) { 
     ui.alert('Sheet Not Found', 'The sheet named "' + sheetName 
@@ -43,7 +46,7 @@ function scraper(dealer,type) {
   var range = source.getRange(1, 1, source.getLastRow(), source.getLastColumn()).getValues();
   
   for (var i = 0; i < range[0].length; i++) {
-    if(range[0][i] == "Advisor Name") { column = parseInt(i); }
+    if(range[0][i] == 'Advisor Name') { column = parseInt(i); }
   }
   
   for (i = 0; i < names.length; i++) {

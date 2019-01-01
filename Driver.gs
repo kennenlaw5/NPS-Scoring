@@ -1,7 +1,14 @@
 function driver (input) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
   switch (input) {
     case 'main_sheet':
-      return 'YTD 2018';
+      var sheet;
+      var sheets = ss.getSheets();
+      for (var i = 0; i < sheets.length; i++) {
+        if (sheets[i].getSheetName().indexOf('YTD') != -1) { sheet = sheets[i].getSheetName(); }
+      }
+      return sheet;
       break;
     case 'dealers':
       var dealers = ['BMW', 'MINI'];
@@ -18,7 +25,6 @@ function getNames (dealer /*REQUIRED*/, sheet) {
   var compile = false;
   var found = false;
   var names = [];
-  Logger.log(names.length)
   var first, last;
   dealer = driver('dealers')[dealer];
   
