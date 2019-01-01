@@ -10,6 +10,7 @@ function newYear() {
     if (input.getResponseText().toLowerCase() != password) { ui.alert('Incorrect', 'That password was incorrect. Please try again.', ui.ButtonSet.OK); continue; }
     check = true;
   }
+  if (ui.alert('Are You Sure?', 'Running this function will be deleting all the previous year\'s information. Are you sure you want to continue?', ui.ButtonSet.YES_NO) != ui.Button.YES) { return; }
   var sheets = ss.getSheets();
   var dealers = driver('dealers');
   if (sheets[0].getSheetName().indexOf('YTD') == -1) {
