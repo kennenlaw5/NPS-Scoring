@@ -3,39 +3,47 @@ function driver (input) {
   
   switch (input) {
     case 'main_sheet':
-      var sheet;
-      var sheets = ss.getSheets();
-      for (var i = 0; i < sheets.length; i++) {
-        if (sheets[i].getSheetName().indexOf('YTD') != -1) { sheet = sheets[i].getSheetName(); }
-      }
-      return sheet;
-      break;
+      var mainSheet;
+      
+      ss.getSheets().forEach(function (sheet) {
+        if (sheet.getSheetName().indexOf('YTD') !== -1) mainSheet = sheet.getSheetName();
+      });
+      
+      return mainSheet;
     case 'dealers':
-      var dealers = ['BMW', 'MINI'];
-      return dealers;
-      break;
+      return ['BMW', 'MINI'];
   }
 }
 
-function getNames (dealer /*REQUIRED*/, sheet) {
+function getNames (dealer /*REQUIRED*/, sheetName) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  if (sheet == undefined) { sheet = ss.getSheetByName(driver('main_sheet')); }
-  else { sheet = ss.getSheetByName(sheet); }
+  
+  if (!sheetName) sheetName = driver('main_sheet');
+  
+  var sheet = ss.getSheetByName(sheetName);
   var values = sheet.getRange(1, 1, sheet.getLastRow()).getDisplayValues();
   var compile = false;
   var found = false;
   var names = [];
-  var first, last;
+  var startRow, endRow;
   dealer = driver('dealers')[dealer];
   
-  for (var i = 0; i < values.length; i++) {
-    if (compile && values[i][0].toUpperCase().indexOf('ADVISER') == -1) {
-      names.push(values[i][0]);
-      if (names.length == 1) { first = i + 1; }
-      if (values[i][0].toUpperCase() == 'OTHER') { compile = false; found = false; last = i + 1; break; }
-    } else if (!compile && values[i][0].toUpperCase() == dealer) {
-      found = true;
-    } else if (found && !compile && values[i][0].toUpperCase().indexOf('ADVISER') != -1) { compile = true; }
-  }
-  return [names, first, last];
+  values.forEach(function (value, index) {
+    if (endRow) return;
+    if (compile) {
+      names.push(value[0]);
+      
+      if (names.length === 1) startRow = index + 1;
+      
+      if (value[0].toUpperCase() === 'OTHER') {
+        endRow = index + 1;
+        compile = false;
+        found = false;
+      }
+    }
+    else if (!compile && !found && value[0].toUpperCase().indexOf(dealer) !== -1) found = true;
+    else if (found && !compile && value[0].toUpperCase().indexOf('ADVISER') !== -1) compile = true;
+  });
+  
+  return [names, startRow, endRow];
 }

@@ -23,7 +23,7 @@ function MPa() { scraper(1, 1); }
 
 function MPr() { scraper(1, 0); }
 
-function scraper(dealer,type) {
+function scraper (dealer, type) {
   //BMW=0, Mini=1;
   //Detractor=2; Passive=1;Promoter=0
   //dealer=0;type=1;
@@ -31,12 +31,30 @@ function scraper(dealer,type) {
   var ui = SpreadsheetApp.getUi();
   var sheetName = ss.getSheetByName(driver('main_sheet')).getRange('F1').getDisplayValue();
   var sheet = ss.getSheetByName(sheetName);
-  if (sheet == null) { 
-    ui.alert('Sheet Not Found', 'The sheet named "' + sheetName 
-             + '" could not be found. Please check the sheet names for any spelling errors and try again.', ui.ButtonSet.OK);
-    return;
+  var types = ['Promoter', 'Passive', 'Detractor'];
+  var confirmation = ui.alert('Continue?', 'You are about to import ' + driver('dealers')[dealer] + ' ' + types[type] + ' information for the month of ' + sheetName + '. Would you like to continue?', ui.ButtonSet.YES_NO)
+  
+  if (confirmation !== ui.Button.YES) return;
+  
+  
+  if (!sheet) { 
+    return ui.alert(
+      'Sheet Not Found',
+      'The sheet named "' + sheetName + '" could not be found. Please check the sheet names for any spelling errors and try again.',
+      ui.ButtonSet.OK
+    );
   }
+  
   var source = ss.getActiveSheet();
+  
+  if (!validSource(source)) {
+    return ui.alert(
+      'Not on source sheet!',
+      'You must be on the imported sheet to use this function. Please select the imported sheet from the available sheets below and try again.',
+      ui.ButtonSet.OK
+    );
+  }
+  
   var column, row;
   var names = getNames(dealer);
   row = names[1];
@@ -46,7 +64,7 @@ function scraper(dealer,type) {
   var range = source.getRange(1, 1, source.getLastRow(), source.getLastColumn()).getValues();
   
   for (var i = 0; i < range[0].length; i++) {
-    if(range[0][i] == 'Advisor Name') { column = parseInt(i); }
+    if (range[0][i].toString().toLowerCase() === 'advisor name') column = parseInt(i);
   }
   
   for (i = 0; i < names.length; i++) {
@@ -54,21 +72,23 @@ function scraper(dealer,type) {
   }
   
   for (var i = 1; i < range.length; i++) {
-    if(range[i][0] != ''){
+    if (range[i][0] !== '') {
       found = false;
-      for (var j = 0; j < names.length && found == false; j++) {
-        if (range[i][column] == names[j][0]) {
+      
+      for (var j = 0; j < names.length && !found; j++) {
+        if (range[i][column] === names[j][0]) {
           found = true;
           names[j][1] += 1;
         }
       }
-      if (found == false) {
-        names[names.length-1][1] += 1;
-      }
-    } else { i = range.length; }
+      
+      if (!found) names[names.length - 1][1] += 1;
+    }
+    else break;
   }
   
   var final = [];
+  
   for (i = 0; i < names.length; i++) {
     final[i] = [names[i][1]];
   }
@@ -78,27 +98,46 @@ function scraper(dealer,type) {
   ss.deleteSheet(source);
 }
 
+function validSource (sourceSheet) {
+  var columnHeaders = sourceSheet.getRange(1, 1, 1, sourceSheet.getLastColumn()).getDisplayValues()[0];
+  columnHeaders = columnHeaders.filter(function (value) { return value.toString().toLowerCase() === 'advisor name' });
+  return columnHeaders.length > 0;
+}
+
 function addAdviser() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var ui = SpreadsheetApp.getUi();
   var input, sheets, row, range, formulas, ytd;
   var valid = false;
+  
   while (!valid) {
     input = ui.prompt('Name', 'Please enter the adviser\'s name exactly as it appears on the NPS site then press "Ok".', ui.ButtonSet.OK_CANCEL);
-    if (input.getSelectedButton() != ui.Button.OK) { return; }
+    
+    if (input.getSelectedButton() !== ui.Button.OK) return;
+    
     var adviser = input.getResponseText();
-    if (adviser == '' || adviser.split(' ').join('') == '') { ui.alert('Field Empty', 'Nothing was entered. Please try again.', ui.ButtonSet.OK); }
-    else { valid = true; }
+    
+    if (adviser === '' || adviser.split(' ').join('') === '') ui.alert('Field Empty', 'Nothing was entered. Please try again.', ui.ButtonSet.OK);
+    else valid = true;
   }
+  
   valid = false;
   while (!valid) {
     input = ui.prompt('Dealership', 'Please enter the dealership the adviser is asigned to. (The options are BMW and Mini)', ui.ButtonSet.OK_CANCEL);
-    if (input.getSelectedButton() != ui.Button.OK) { return; }
+    
+    if (input.getSelectedButton() !== ui.Button.OK) return;
+    
     var dealer = input.getResponseText();
-    if (dealer == '' || dealer.split(' ').join('') == '') { ui.alert('Field Empty', 'Nothing was entered. Please try again.', ui.ButtonSet.OK); continue; }
+    
+    if (dealer == '' || dealer.split(' ').join('') == '') {
+      ui.alert('Field Empty', 'Nothing was entered. Please try again.', ui.ButtonSet.OK);
+      continue;
+    }
+    
     dealer = driver('dealers').indexOf(input.getResponseText().toUpperCase());
-    if (dealer == -1) { ui.alert('Invalid Input', 'Please enter a valid response. The options are: BMW and Mini', ui.ButtonSet.OK); }
-    else { valid = true; }
+    
+    if (dealer === -1) ui.alert('Invalid Input', 'Please enter a valid response. The options are: BMW and Mini', ui.ButtonSet.OK);
+    else valid = true;
   }
   
   sheets = ss.getSheets();
@@ -109,14 +148,18 @@ function addAdviser() {
     range = sheets[i].getRange(row, 2, 1, sheets[i].getLastColumn() - 1);
     formulas = range.getFormulas();
     sheets[i].insertRowBefore(row);
-    if (i == 0 && sheets[i].getName().split(' ')[0].toUpperCase() == 'YTD') { ytd = [formulas, row]; }
-    else { range.setFormulas(formulas); }
+    
+    if (i == 0 && sheets[i].getName().split(' ')[0].toUpperCase() == 'YTD') ytd = [formulas, row];
+    else range.setFormulas(formulas);
+    
     sheets[i].getRange(row, 1).setValue(adviser);
+    
     if (i == 12 && ytd[0].length > 0) { 
       sheets[0].activate();
       sheets[0].getRange(ytd[1], 2, 1, sheets[0].getLastColumn() - 1).setFormulas(ytd[0]);
     }
   }
+  
   ss.toast(adviser + ' was added successfully to the sheet!', 'Complete!');
 }
 
